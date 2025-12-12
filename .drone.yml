@@ -3,12 +3,6 @@ kind: pipeline
 type: docker
 name: network-automation
 
-trigger:
-  event:
-    - push
-    - pull_request
-    - tag
-
 steps:
 - name: terraform-init
   image: hashicorp/terraform:latest
@@ -64,45 +58,3 @@ steps:
       from_secret: MINIO_BUCKET
   commands:
     - terraform apply -auto-approve tfplan
-
----
-kind: pipeline
-type: docker
-name: network-destroy
-
-trigger:
-  event:
-    - custom
-
-steps:
-- name: terraform-init
-  image: hashicorp/terraform:latest
-  environment:
-    AWS_ACCESS_KEY_ID:
-      from_secret: MINIO_ACCESS_KEY
-    AWS_SECRET_ACCESS_KEY:
-      from_secret: MINIO_SECRET_KEY
-    MINIO_ENDPOINT:
-      from_secret: MINIO_ENDPOINT
-    MINIO_BUCKET:
-      from_secret: MINIO_BUCKET
-  commands:
-    - terraform init -backend-config="endpoints={s3=\"$MINIO_ENDPOINT\"}" -backend-config="bucket=$MINIO_BUCKET"
-
-- name: terraform-destroy
-  image: hashicorp/terraform:latest
-  environment:
-    TF_VAR_username:
-      from_secret: tf_username
-    TF_VAR_password:
-      from_secret: tf_password
-    AWS_ACCESS_KEY_ID:
-      from_secret: MINIO_ACCESS_KEY
-    AWS_SECRET_ACCESS_KEY:
-      from_secret: MINIO_SECRET_KEY
-    MINIO_ENDPOINT:
-      from_secret: MINIO_ENDPOINT
-    MINIO_BUCKET:
-      from_secret: MINIO_BUCKET
-  commands:
-    - terraform destroy -auto-approve
