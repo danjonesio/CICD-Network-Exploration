@@ -52,8 +52,9 @@ steps:
       from_secret: MINIO_ENDPOINT
   commands:
     - terraform apply -auto-approve tfplan
-  when:
-    branch:
-      - main
-    event:
-      - push
+  # when:
+  #   branch:
+  #     - main
+  #   event:
+  #     - push
+  # to be reactivated once proxy is built out to allow webhooks from GH
