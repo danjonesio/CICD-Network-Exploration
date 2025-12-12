@@ -3,6 +3,11 @@ kind: pipeline
 type: docker
 name: network-automation
 
+trigger:
+  event:
+    exclude:
+      - custom
+
 steps:
 - name: terraform-init
   image: hashicorp/terraform:latest
