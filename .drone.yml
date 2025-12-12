@@ -13,6 +13,8 @@ steps:
       from_secret: MINIO_SECRET_KEY
     AWS_ENDPOINT:
       from_secret: MINIO_ENDPOINT
+    MINIO_BUCKET:
+      from_secret: MINIO_BUCKET
   commands:
     - terraform init -backend-config="endpoint=$AWS_ENDPOINT" -backend-config="bucket=$MINIO_BUCKET"
   
@@ -34,6 +36,8 @@ steps:
       from_secret: MINIO_SECRET_KEY
     AWS_ENDPOINT:
       from_secret: MINIO_ENDPOINT
+    MINIO_BUCKET:
+      from_secret: MINIO_BUCKET
   commands:
     - terraform plan -out=tfplan
 
@@ -50,6 +54,8 @@ steps:
       from_secret: MINIO_SECRET_KEY
     AWS_ENDPOINT:
       from_secret: MINIO_ENDPOINT
+    MINIO_BUCKET:
+      from_secret: MINIO_BUCKET
   commands:
     - terraform apply -auto-approve tfplan
   # when:

@@ -33,7 +33,7 @@ resource "iosxe_save_config" "save_config" {
 
   device = each.key
 
-  depends_on = [ 
+  depends_on = [
     module.snmp_config
-   ]
+  ]
 }
