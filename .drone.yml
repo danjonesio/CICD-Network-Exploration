@@ -1,5 +1,5 @@
 ---
-kind: pipepine
+kind: pipeline
 type: docker
 name: default
 
