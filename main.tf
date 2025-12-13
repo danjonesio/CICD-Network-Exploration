@@ -23,13 +23,13 @@ provider "iosxe" {
 }
 
 module "snmp" {
-  source = "./modules.snmp"
+  source = "./modules/snmp"
 
   routers = local.routers
 }
 
 module "banner" {
-  source = "./modules.banner"
+  source = "./modules/banner"
 
   routers = local.routers
 }
