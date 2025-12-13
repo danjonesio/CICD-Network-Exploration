@@ -22,8 +22,14 @@ provider "iosxe" {
   ]
 }
 
-module "snmp_config" {
-  source = "./config"
+module "snmp" {
+  source = "./modules.snmp"
+
+  routers = local.routers
+}
+
+module "banner" {
+  source = "./modules.banner"
 
   routers = local.routers
 }
@@ -34,6 +40,7 @@ resource "iosxe_save_config" "save_config" {
   device = each.key
 
   depends_on = [
-    module.snmp_config
+    module.snmp,
+    module.banner
   ]
 }
