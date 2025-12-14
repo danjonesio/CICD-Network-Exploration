@@ -8,7 +8,7 @@ export TF_VAR_username="admin"
 export TF_VAR_password="cisco"
 
 # set your S3 endpoint and bucket name
-terraform init -backend-config="endpoints={s3=\"S3_ENDPOINTURL\"}" -backend-config="bucket=ARTIFACT_BUCKET_NAME"
+terraform init -backend-config="endpoints={s3=\"S3_ENDPOINTURL\"}"
 terraform destroy
 
 # Save configs after destroy
