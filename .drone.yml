@@ -11,7 +11,7 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     AWS_SECRET_ACCESS_KEY:
       from_secret: MINIO_SECRET_KEY
-    AWS_S3_ENDPOINT:
+    AWS_ENDPOINT_URL_S3:
       from_secret: MINIO_ENDPOINT
   commands:
     - terraform init
@@ -32,7 +32,7 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     AWS_SECRET_ACCESS_KEY:
       from_secret: MINIO_SECRET_KEY
-    AWS_S3_ENDPOINT:
+    AWS_ENDPOINT_URL_S3:
       from_secret: MINIO_ENDPOINT
   commands:
     - terraform plan -out=tfplan
@@ -48,7 +48,7 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     AWS_SECRET_ACCESS_KEY:
       from_secret: MINIO_SECRET_KEY
-    AWS_S3_ENDPOINT:
+    AWS_ENDPOINT_URL_S3:
       from_secret: MINIO_ENDPOINT
   commands:
     - terraform apply -auto-approve tfplan
