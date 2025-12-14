@@ -15,16 +15,26 @@ Automate Cisco network device configuration using Terraform, the IOSXE provider,
 ```
 GitHub → Drone Pipeline → MinIO (State)
               ↓
-        Cisco Routers
-     (P-01, P-02, DR-01, DR-02)
+        NETCONF/YANG
+              ↓
+    Cisco Network Devices
+  (P-01, P-02, DR-01, DR-02)
 ```
+
+**Key Design Patterns:**
+- Single `iosxe` provider manages all devices via NETCONF
+- Device inventory in `devices.tf` drives all module configurations
+- Interface data in `interfaces.tf` (local values, not resources)
+- Modules use `for_each` with device names as keys
+- Explicit config saving via `iosxe_save_config` resource
 
 ## Prerequisites
 
-- Cisco IOS devices with NETCONF enabled
-- Drone CI/CD server
-- MinIO for state storage
+- Cisco IOS-XE devices with NETCONF enabled
+- Drone CI/CD server (optional, for automated deployments)
+- MinIO server for Terraform state storage (S3-compatible)
 - Terraform >= 1.0
+- SSH access to devices (for `destroy.sh` script)
 
 ### Enable NETCONF on Devices
 
@@ -65,7 +75,6 @@ drone secret add --repository your-org/Network-CICD --name tf_password --data "c
 drone secret add --repository your-org/Network-CICD --name MINIO_ACCESS_KEY --data "your-key"
 drone secret add --repository your-org/Network-CICD --name MINIO_SECRET_KEY --data "your-secret"
 drone secret add --repository your-org/Network-CICD --name MINIO_ENDPOINT --data "http://minio:9000"
-drone secret add --repository your-org/Network-CICD --name MINIO_BUCKET --data "drone-artifacts"
 ```
 
 ### 3. Deploy
@@ -79,10 +88,12 @@ drone build create your-org/Network-CICD --event push
 ```bash
 export AWS_ACCESS_KEY_ID="your-key"
 export AWS_SECRET_ACCESS_KEY="your-secret"
+export AWS_ENDPOINT_URL_S3="http://minio-host:9000"
 export TF_VAR_username="admin"
 export TF_VAR_password="cisco"
 
-terraform init -backend-config="endpoints={s3=\"http://minio:9000\"}" -backend-config="bucket=drone-artifacts"
+terraform init
+terraform plan
 terraform apply
 ```
 
@@ -90,24 +101,29 @@ terraform apply
 
 ```
 Network-CICD/
-├── main.tf              # Provider & module configuration
-├── backend.tf           # Remote state configuration
-├── devices.tf           # Device inventory
-├── variables.tf         # Input variables
-├── .drone.yml           # CI/CD pipeline
-├── destroy.sh           # Cleanup script
+├── main.tf                    # Provider & module configuration
+├── backend.tf                 # Remote state (MinIO S3)
+├── devices.tf                 # Device inventory (routers, switches)
+├── interfaces.tf              # Interface data definitions
+├── variables.tf               # Input variables (credentials)
+├── .drone.yml                 # CI/CD pipeline (4 stages)
+├── destroy.sh                 # Safe cleanup with interface shutdown
 └── modules/
-    ├── snmp/            # SNMP configuration
-    └── banner/          # Login banner configuration
+    ├── snmp/                  # SNMP configuration
+    ├── banner/                # Login banner configuration
+    └── interfaces_core_wan/   # WAN interface management
 ```
 
 ## Available Modules
 
 ### SNMP
-Configures SNMP communities, location, contact, and chassis ID.
+Configures SNMP contact, chassis ID, and other SNMP server settings on routers.
 
 ### Banner
-Applies login warning banners to devices.
+Applies login warning banners to all router devices.
+
+### WAN Interfaces
+Configures WAN uplink interfaces (GigabitEthernet) with IP addressing, MTU, and bandwidth settings. Interface data is defined in `interfaces.tf` as local values.
 
 ## Destroying Configuration
 
@@ -116,20 +132,31 @@ chmod +x destroy.sh
 ./destroy.sh
 ```
 
-The script removes all configurations and saves to startup-config. This is run locally to avoid any confusion in pipelines.
+**Important**: Always use `destroy.sh` instead of `terraform destroy` directly. The script:
+1. Shuts down managed interfaces via SSH (workaround for [provider bug #219](https://github.com/CiscoDevNet/terraform-provider-iosxe/issues/219) where interfaces remain up after destroy)
+2. Runs `terraform destroy`
+3. Saves configurations to startup-config via SSH
+
+This ensures a clean teardown and prevents interfaces from being left in an active state.
 
 ## Adding New Modules
 
-1. Create `modules/new-module/` directory
-2. Add `main.tf`, `variables.tf`, `versions.tf`
-3. Reference in [`main.tf`](main.tf ):
+1. Create `modules/new-module/` directory with:
+   - `<feature>.tf` or `interface_template.tf` - resource definitions
+   - `variables.tf` - module inputs (device or interface maps)
+   - `versions.tf` - provider version constraints
 
+2. Add module call in `main.tf`:
 ```hcl
 module "new_module" {
   source  = "./modules/new-module"
-  routers = local.routers
+  routers = local.routers  # or wan_interfaces = local.wan_interfaces
 }
 ```
+
+3. Add to `depends_on` in `iosxe_save_config` resource to ensure configs are saved
+
+**Pattern**: Modules iterate with `for_each` over maps, using device name (`each.key`) as the `device` parameter.
 
 ## Learn More
 

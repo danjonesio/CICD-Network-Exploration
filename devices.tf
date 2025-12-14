@@ -18,12 +18,12 @@ locals {
     }
   }
 
-  switches = {
-    "SW-01" = {
-      host = "192.168.2.230"
-      role = "access"
-    }
-  }
+  # switches = {
+  #   "SW-01" = {
+  #     host = "192.168.2.230"
+  #     role = "access"
+  #   }
+  # }
 
-  all_devices = merge(local.routers, local.switches)
+  all_devices = merge(local.routers)
 }

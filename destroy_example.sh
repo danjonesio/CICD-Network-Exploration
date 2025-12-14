@@ -9,7 +9,24 @@ export TF_VAR_username="admin"
 export TF_VAR_password="cisco"
 export AWS_ENDPOINT_URL_S3="S3_ENDPOINTURL"
 
-# set your S3 endpoint and bucket name
+# Workaround for https://github.com/CiscoDevNet/terraform-provider-iosxe/issues/219
+# Interfaces remain up after destroy - manually shutdown before destroying
+echo "Shutting down managed interfaces before destroy..."
+
+# Shutdown WAN interfaces (GigabitEthernet1) on all routers, set IPs accordingly.
+for host in 192.168.2.220 192.168.2.221 192.168.2.222 192.168.2.223; do
+  echo "Shutting down interfaces on $host..."
+  sshpass -p "cisco" ssh -o StrictHostKeyChecking=no admin@$host << 'EOF'
+conf t
+interface GigabitEthernet1
+shutdown
+exit
+exit
+EOF
+done
+
+echo "Interfaces shut down. Proceeding with Terraform destroy..."
+
 terraform init
 terraform destroy
 
