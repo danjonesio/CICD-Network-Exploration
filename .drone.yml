@@ -11,10 +11,10 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     AWS_SECRET_ACCESS_KEY:
       from_secret: MINIO_SECRET_KEY
-    MINIO_ENDPOINT:
+    AWS_S3_ENDPOINT:
       from_secret: MINIO_ENDPOINT
   commands:
-    - terraform init -backend-config="endpoints={s3=\"$MINIO_ENDPOINT\"}"
+    - terraform init #-backend-config="endpoints={s3=\"$MINIO_ENDPOINT\"}"
   
 - name: terraform-validate
   image: hashicorp/terraform:latest
@@ -32,7 +32,7 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     AWS_SECRET_ACCESS_KEY:
       from_secret: MINIO_SECRET_KEY
-    MINIO_ENDPOINT:
+    AWS_S3_ENDPOINT:
       from_secret: MINIO_ENDPOINT
   commands:
     - terraform plan -out=tfplan
@@ -48,7 +48,7 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     AWS_SECRET_ACCESS_KEY:
       from_secret: MINIO_SECRET_KEY
-    MINIO_ENDPOINT:
+    AWS_S3_ENDPOINT:
       from_secret: MINIO_ENDPOINT
   commands:
     - terraform apply -auto-approve tfplan
