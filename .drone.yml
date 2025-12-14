@@ -16,7 +16,7 @@ steps:
     MINIO_BUCKET:
       from_secret: MINIO_BUCKET
   commands:
-    - terraform init -backend-config="endpoints={s3=\"$MINIO_ENDPOINT\"}" -backend-config="bucket=$MINIO_BUCKET"
+    - terraform init -backend-config="endpoints={s3=\"$MINIO_ENDPOINT\"}" # -backend-config="bucket=$MINIO_BUCKET" (no longer required as set in backend.tf)
   
 - name: terraform-validate
   image: hashicorp/terraform:latest
