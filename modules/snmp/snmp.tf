@@ -3,7 +3,7 @@ resource "iosxe_snmp_server" "snmp_lab" {
 
   device = each.key
 
-  contact    = "admin@netcask.com"
+  contact = "admin@netcask.com"
   # location   = "Homelab Setup - ${each.value.role}"
   chassis_id = "Lab-Router-${each.key}"
 }

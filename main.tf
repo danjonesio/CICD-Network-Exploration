@@ -12,7 +12,7 @@ provider "iosxe" {
   password = var.password
 
   devices = [
-    for name, device in local.routers : {
+    for name, device in local.all_devices : {
       name        = name
       host        = device.host
       protocol    = "netconf"
@@ -23,24 +23,27 @@ provider "iosxe" {
 }
 
 module "snmp" {
-  source = "./modules/snmp"
-
+  source  = "./modules/snmp"
   routers = local.routers
 }
 
 module "banner" {
-  source = "./modules/banner"
-
+  source  = "./modules/banner"
   routers = local.routers
 }
 
-resource "iosxe_save_config" "save_config" {
-  for_each = local.routers
+module "wan_interfaces" {
+  source         = "./modules/interfaces_core_wan"
+  wan_interfaces = local.wan_interfaces
+}
 
-  device = each.key
+resource "iosxe_save_config" "save_config" {
+  for_each = local.all_devices
+  device   = each.key
 
   depends_on = [
     module.snmp,
-    module.banner
+    module.banner,
+    module.wan_interfaces,
   ]
 }

@@ -17,4 +17,13 @@ locals {
       role = "secondary"
     }
   }
+
+  switches = {
+    "SW-01" = {
+      host = "192.168.2.230"
+      role = "access"
+    }
+  }
+
+  all_devices = merge(local.routers, local.switches)
 }
