@@ -160,11 +160,3 @@ module "new_module" {
 ## Learn More
 
 Full walkthrough and deep dive available at [netcask.com](https://netcask.com)
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details
-
----
-
-**Part of the netcask.com network automation series**
