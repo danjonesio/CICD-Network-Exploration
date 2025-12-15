@@ -41,7 +41,6 @@ GitHub → Drone Pipeline → MinIO (State)
 ```cisco
 conf t
 netconf-yang
-netconf-yang cisco-odm polling-enable
 ```
 
 ## Quick Start
