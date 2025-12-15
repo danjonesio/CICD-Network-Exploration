@@ -4,9 +4,24 @@ terraform {
       source  = "CiscoDevNet/iosxe"
       version = "0.13.0"
     }
+    netbox = {
+      source  = "e-breuninger/netbox"
+      version = "~> 5.0.0"
+    }
   }
 }
 
+# -----------------------------------------------------------------------------
+# NetBox Provider - Source of Truth for device and interface data
+# -----------------------------------------------------------------------------
+provider "netbox" {
+  server_url = var.netbox_url
+  api_token  = var.netbox_token
+}
+
+# -----------------------------------------------------------------------------
+# IOS-XE Provider - Configures Cisco devices via NETCONF
+# -----------------------------------------------------------------------------
 provider "iosxe" {
   username = var.username
   password = var.password

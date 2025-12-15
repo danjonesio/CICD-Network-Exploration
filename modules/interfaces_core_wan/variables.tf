@@ -5,8 +5,6 @@ variable "wan_interfaces" {
     description    = string
     ip_address     = string
     subnet_mask    = string
-    mtu            = number
-    bandwidth      = number
     shutdown       = bool
     interface_type = string
   }))
