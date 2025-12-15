@@ -34,9 +34,9 @@ steps:
       from_secret: MINIO_SECRET_KEY
     AWS_ENDPOINT_URL_S3:
       from_secret: MINIO_ENDPOINT
-    netbox_url:
+    TF_VAR_netbox_url:
       from_secret: netbox_url
-    netbox_token:
+    TF_VAR_netbox_token:
       from_secret: netbox_token
   commands:
     - terraform plan -out=tfplan
@@ -54,9 +54,9 @@ steps:
       from_secret: MINIO_SECRET_KEY
     AWS_ENDPOINT_URL_S3:
       from_secret: MINIO_ENDPOINT
-    netbox_url:
+    TF_VAR_netbox_url:
       from_secret: netbox_url
-    netbox_token:
+    TF_VAR_netbox_token:
       from_secret: netbox_token
   commands:
     - terraform apply -auto-approve tfplan
