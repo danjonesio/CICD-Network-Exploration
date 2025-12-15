@@ -1,15 +1,11 @@
-# -----------------------------------------------------------------------------
-# NetBox Data Sources
-# Fetches device and interface data from NetBox as the source of truth
-# -----------------------------------------------------------------------------
+# Pull device and interface info from NetBox
 
-# First, get the device role ID for "router"
+# Get the router role so we can filter devices by it
 data "netbox_device_role" "router" {
   name = "Router"
 }
 
-# Fetch all devices with the "router" role from NetBox
-# These will be used to build local.routers dynamically
+# All our routers from NetBox
 data "netbox_devices" "routers" {
   filter {
     name  = "role_id"
@@ -17,14 +13,10 @@ data "netbox_devices" "routers" {
   }
 }
 
-# Fetch all device interfaces - we'll filter by description in locals
-# The provider doesn't support description filtering, so we get all and filter
-data "netbox_device_interfaces" "all" {
-  # Get all interfaces, we'll filter for WAN in locals
-}
+# All interfaces - we filter for WAN stuff in locals below
+data "netbox_device_interfaces" "all" {}
 
-# Fetch IP addresses for each device
-# We filter by device_id to get IPs assigned to each device's interfaces
+# IPs assigned to each device
 data "netbox_ip_addresses" "device_ips" {
   for_each = {
     for device in data.netbox_devices.routers.devices :
@@ -37,7 +29,7 @@ data "netbox_ip_addresses" "device_ips" {
   }
 }
 
-# Fetch sites for each device to get site names
+# Site info for each device (used in SNMP location)
 data "netbox_site" "device_sites" {
   for_each = {
     for device in data.netbox_devices.routers.devices :
@@ -48,55 +40,47 @@ data "netbox_site" "device_sites" {
   id = tostring(each.value)
 }
 
-# -----------------------------------------------------------------------------
-# Locals - Transform NetBox data into the format expected by modules
-# -----------------------------------------------------------------------------
+# Transform NetBox data into what our modules expect
 locals {
-  # Build a lookup map of device ID -> device name for easy reference
+  # Quick lookup: device ID -> name
   device_id_to_name = {
     for device in data.netbox_devices.routers.devices :
     device.device_id => device.name
   }
 
-  # Build routers map from NetBox devices
-  # Format: { "P-01" = { host = "192.168.2.220", site = "Primary Site" } }
+  # Router map: { "P-01" = { host = "192.168.2.220", site = "Primary Site" } }
   netbox_routers = {
     for device in data.netbox_devices.routers.devices :
     device.name => {
       host = device.primary_ipv4
-      # Get site name from NetBox
       site = try(data.netbox_site.device_sites[device.name].name, "Unknown Site")
     }
     if device.primary_ipv4 != null
   }
 
-  # Filter interfaces that have "WAN" in description and belong to our routers
+  # Only interfaces with "WAN" in the description
   wan_interfaces_raw = [
     for iface in data.netbox_device_interfaces.all.interfaces :
     iface
     if iface.description != null && can(regex("(?i)wan", iface.description)) && contains(keys(local.device_id_to_name), tostring(iface.device_id))
   ]
 
-  # Build a lookup of device_name -> WAN IP info from NetBox
-  # Filter for IPs with "WAN" in their description
+  # WAN IPs per device (keeps CIDR notation like "10.10.10.1/24")
   device_wan_ips = {
     for device_name, ip_data in data.netbox_ip_addresses.device_ips :
     device_name => [
       for ip in ip_data.ip_addresses :
-      ip.ip_address # Keep full CIDR notation (e.g., "10.10.10.1/24")
+      ip.ip_address
       if ip.description != null && can(regex("(?i)wan", ip.description))
     ]
   }
 
-  # Build WAN interfaces map from NetBox data
-  # This transforms NetBox interface + IP data into the format expected by the module
+  # WAN interfaces in the format our modules expect
   netbox_wan_interfaces = {
     for iface in local.wan_interfaces_raw :
     lookup(local.device_id_to_name, tostring(iface.device_id), "unknown") => {
-      # Parse interface number from name (e.g., "GigabitEthernet 1" -> "1")
-      interface   = regex("[0-9]+$", iface.name)
-      description = coalesce(iface.description, "WAN Interface")
-      # Get the WAN IP for this device - use built-in Terraform functions for CIDR parsing
+      interface      = regex("[0-9]+$", iface.name) # e.g. "GigabitEthernet 1" -> "1"
+      description    = coalesce(iface.description, "WAN Interface")
       ip_address     = try(split("/", local.device_wan_ips[lookup(local.device_id_to_name, tostring(iface.device_id), "unknown")][0])[0], "")
       subnet_mask    = try(cidrnetmask(local.device_wan_ips[lookup(local.device_id_to_name, tostring(iface.device_id), "unknown")][0]), "255.255.255.0")
       shutdown       = !iface.enabled
