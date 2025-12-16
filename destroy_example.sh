@@ -15,7 +15,7 @@ export TF_VAR_netbox_token="netbox_token"
 # Interfaces remain up after destroy - manually shutdown before destroying
 echo "Shutting down managed interfaces before destroy..."
 
-# Shutdown WAN interfaces (GigabitEthernet1) on all routers, set IPs accordingly.
+# Shutdown interfaces (GigabitEthernet1) on all routers, set IPs accordingly and any others you require.
 for host in 192.168.2.220 192.168.2.221 192.168.2.222 192.168.2.223; do
   echo "Shutting down interfaces on $host..."
   sshpass -p "cisco" ssh -o StrictHostKeyChecking=no admin@$host << 'EOF'
