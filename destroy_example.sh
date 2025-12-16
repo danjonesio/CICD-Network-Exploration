@@ -8,6 +8,8 @@ export AWS_SECRET_ACCESS_KEY="S3_SECRET_ACCESS"
 export TF_VAR_username="admin"
 export TF_VAR_password="cisco"
 export AWS_ENDPOINT_URL_S3="S3_ENDPOINTURL"
+export TF_VAR_netbox_url="netbox_url"
+export TF_VAR_netbox_token="netbox_token"
 
 # Workaround for https://github.com/CiscoDevNet/terraform-provider-iosxe/issues/219
 # Interfaces remain up after destroy - manually shutdown before destroying
