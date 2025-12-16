@@ -43,8 +43,8 @@ GitHub → Drone Pipeline → MinIO (State)
 Devices in NetBox should have:
 - **Primary IP** assigned (management IP for NETCONF)
 - **Site** assigned (used for SNMP location)
-- **Interfaces** with description containing "WAN" for WAN interface discovery
-- **IP addresses** on interfaces with description containing "WAN"
+- **Interfaces** defined (MGMT interfaces are excluded automatically)
+- **IP addresses** with descriptions matching interface descriptions
 
 ### Enable NETCONF on Devices
 
@@ -109,14 +109,13 @@ Network-CICD/
 ├── netbox.tf                  # NetBox data sources and transformations
 ├── backend.tf                 # Remote state (MinIO S3)
 ├── devices.tf                 # Device inventory (from NetBox)
-├── interfaces.tf              # Interface definitions (from NetBox)
 ├── variables.tf               # Input variables (credentials, NetBox)
 ├── .drone.yml                 # CI/CD pipeline (4 stages)
 ├── destroy.sh                 # Safe cleanup with interface shutdown
 └── modules/
     ├── snmp/                  # SNMP configuration
     ├── banner/                # Login banner configuration
-    └── interfaces_core_wan/   # WAN interface management
+    └── interfaces/            # Interface configuration
 ```
 
 ## Available Modules
@@ -127,8 +126,8 @@ Configures SNMP contact, chassis ID, and location (from NetBox site) on routers.
 ### Banner
 Applies login warning banners to all router devices.
 
-### WAN Interfaces
-Configures WAN uplink interfaces (GigabitEthernet) with IP addressing. Interface data and IP addresses are discovered from NetBox based on interface descriptions containing "WAN".
+### Interfaces
+Configures all non-MGMT interfaces discovered from NetBox. Supports both L3 interfaces (with IP) and L2 interfaces (description only). MGMT interfaces are automatically excluded.
 
 ## Destroying Configuration
 

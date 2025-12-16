@@ -47,9 +47,9 @@ module "banner" {
   routers = local.routers
 }
 
-module "wan_interfaces" {
-  source         = "./modules/interfaces_core_wan"
-  wan_interfaces = local.wan_interfaces
+module "interfaces" {
+  source     = "./modules/interfaces"
+  interfaces = local.netbox_interfaces
 }
 
 resource "iosxe_save_config" "save_config" {
@@ -59,6 +59,6 @@ resource "iosxe_save_config" "save_config" {
   depends_on = [
     module.snmp,
     module.banner,
-    module.wan_interfaces,
+    module.interfaces,
   ]
 }
