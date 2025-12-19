@@ -60,9 +60,3 @@ steps:
       from_secret: netbox_token
   commands:
     - terraform apply -auto-approve tfplan
-
-trigger:
-  branch:
-    - main
-  event:
-    - push
