@@ -118,17 +118,6 @@ Network-CICD/
     └── interfaces/            # Interface configuration
 ```
 
-## Available Modules
-
-### SNMP
-Configures SNMP contact, chassis ID, and location (from NetBox site) on routers.
-
-### Banner
-Applies login warning banners to all router devices.
-
-### Interfaces
-Configures all non-MGMT interfaces discovered from NetBox. Supports both L3 interfaces (with IP) and L2 interfaces (description only). MGMT interfaces are automatically excluded.
-
 ## Destroying Configuration
 
 ```bash
